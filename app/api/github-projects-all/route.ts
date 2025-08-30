@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   try {
     const projects = await gatherAllGitHubProjects(username);
     return NextResponse.json({ projects });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch full project list' }, { status: 500 });
   }
 }

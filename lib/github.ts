@@ -47,7 +47,10 @@ export async function fetchAllRepos(username: string, max = 100): Promise<GitHub
   const data: GitHubProjectRaw[] = await fetchJSON(`${GITHUB_API}/users/${username}/repos?per_page=${Math.min(max,100)}&sort=updated`);
   // Heuristic: "fully developed" -> has description length > 12 OR size > 30 (approx) to avoid tiny throwaway repos
   return data
-    .filter(r => (r.description && r.description.trim().length > 12) || (r as any).size > 30)
+    .filter(r => {
+      const size = (r as unknown as { size?: number }).size || 0;
+      return (r.description && r.description.trim().length > 12) || size > 30;
+    })
     .map(r => ({
       slug: r.name.toLowerCase(),
       title: r.name,
@@ -72,19 +75,24 @@ export async function fetchPinnedRepos(username: string, token: string): Promise
   if (!res.ok) throw new Error('GitHub GraphQL error');
   const json = await res.json();
   const nodes = json.data?.user?.pinnedItems?.nodes || [];
-  return nodes.map((n: any) => ({
-    slug: n.name.toLowerCase(),
-    title: n.name,
-    description: n.description || 'No description provided.',
-    tech: [
-      ...(n.repositoryTopics?.nodes?.map((t: any) => t.topic.name) || []),
-      ...(n.primaryLanguage?.name ? [n.primaryLanguage.name] : []),
-    ].filter(Boolean).slice(0, 6),
-    repo: n.url,
-    demo: n.homepageUrl || undefined,
-    stars: n.stargazerCount,
-    source: 'pinned',
-  }));
+  interface PinnedNode {
+    name: string; description: string | null; url: string; homepageUrl?: string | null; stargazerCount?: number;
+    primaryLanguage?: { name?: string | null } | null;
+    repositoryTopics?: { nodes?: { topic: { name: string } }[] } | null;
+  }
+  return (nodes as PinnedNode[]).map((n) => ({
+      slug: n.name.toLowerCase(),
+      title: n.name,
+      description: n.description || 'No description provided.',
+      tech: [
+        ...((n.repositoryTopics?.nodes || []).map(t => t.topic.name)),
+        ...(n.primaryLanguage?.name ? [n.primaryLanguage.name] : []),
+      ].filter(Boolean).slice(0, 6),
+      repo: n.url,
+      demo: n.homepageUrl || undefined,
+      stars: n.stargazerCount,
+      source: 'pinned' as const,
+    }));
 }
 
 export async function gatherGitHubProjects(username: string): Promise<GitHubProject[]> {

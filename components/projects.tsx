@@ -1,10 +1,11 @@
 "use client";
-import { projects } from '@/lib/data/projects';
+import { projects as localProjects } from '@/lib/data/projects';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useReducedMotion } from 'framer-motion';
 
-const allTags = Array.from(new Set(projects.flatMap(p => p.tech))).sort();
+const allTags = Array.from(new Set(localProjects.flatMap(p => p.tech))).sort();
 
+type LocalProject = typeof localProjects[number];
 interface RemoteProject {
   slug: string; title: string; description: string; tech: string[]; repo: string; demo?: string; stars?: number; source?: string;
 }
@@ -35,10 +36,10 @@ export function Projects({ initialRemote = [] }: ProjectsProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const baseFiltered = tag ? projects.filter(p => p.tech.includes(tag)) : projects;
-  const merged = [...baseFiltered, ...remote.filter(r => !baseFiltered.some(b => b.slug === r.slug))] as (typeof projects[number] | RemoteProject)[];
+  const baseFiltered = tag ? localProjects.filter(p => p.tech.includes(tag)) : localProjects;
+  const merged = [...baseFiltered, ...remote.filter(r => !baseFiltered.some(b => b.slug === r.slug))] as (LocalProject | RemoteProject)[];
   const textFiltered = merged.filter(p => !query || (p.title + p.description).toLowerCase().includes(query.toLowerCase()));
-  const withStars = (p: any): p is RemoteProject & { stars: number } => typeof p.stars === 'number';
+  const withStars = (p: RemoteProject | (typeof localProjects)[number]): p is RemoteProject & { stars: number } => typeof (p as RemoteProject).stars === 'number';
   const sorted = [...textFiltered].sort((a,b) => (withStars(b)?b.stars:0) - (withStars(a)?a.stars:0));
 
   return (
@@ -73,8 +74,11 @@ export function Projects({ initialRemote = [] }: ProjectsProps) {
               </div>
             ))}
             {sorted.map(p => {
-              const key = `${p.slug}-${'source' in p ? (p as any).source || 'local' : 'local'}`;
-              return <InteractiveProjectCard key={key} project={p} stars={withStars(p)?p.stars:undefined} source={'source' in p ? (p as any).source: undefined} />;
+              const key = `${p.slug}-${'source' in p ? (p as RemoteProject).source || 'local' : 'local'}`;
+              const source = 'source' in p ? (p as RemoteProject).source : undefined;
+              const stars = withStars(p) ? p.stars : undefined;
+              const project: InteractiveCardProject = { slug: p.slug, title: p.title, description: p.description, tech: p.tech, repo: p.repo, demo: (p as RemoteProject).demo };
+              return <InteractiveProjectCard key={key} project={project} stars={stars} source={source} />;
             })}
           </AnimatePresence>
         </div>

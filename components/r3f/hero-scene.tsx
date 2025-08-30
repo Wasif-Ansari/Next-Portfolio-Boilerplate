@@ -1,5 +1,5 @@
 "use client";
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Suspense, useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { Environment } from '@react-three/drei';
@@ -17,7 +17,6 @@ function FloatingCluster() {
       speed: Math.random()*0.3 + 0.05
     }));
   }, []);
-  const temp = new THREE.Vector3();
   useFrame((state, delta) => {
     if (!group.current) return;
     // Parallax follow pointer

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     // TODO: integrate real email sending with an API key / SMTP using environment variables.
     console.log('CONTACT_FORM', parsed);
     return NextResponse.json({ ok: true });
-  } catch (e: unknown) {
+  } catch {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 }

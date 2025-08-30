@@ -25,6 +25,6 @@ export function MagneticButton({ children, className = '', href, asAnchor = fals
     <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-[radial-gradient(circle_at_30%_30%,white_0%,transparent_65%)] mix-blend-overlay" />
     <span className="relative">{children}</span>
   </>;
-  if (asAnchor && href) return <div className="magnetic-wrapper inline-block"><a ref={ref as any} href={href} className={base}>{inner}</a></div>;
-  return <div className="magnetic-wrapper inline-block"><button ref={ref as any} className={base}>{inner}</button></div>;
+  if (asAnchor && href) return <div className="magnetic-wrapper inline-block"><a ref={ref as React.MutableRefObject<HTMLAnchorElement | null>} href={href} className={base}>{inner}</a></div>;
+  return <div className="magnetic-wrapper inline-block"><button ref={ref as React.MutableRefObject<HTMLButtonElement | null>} className={base}>{inner}</button></div>;
 }

@@ -27,9 +27,10 @@ function ParticleSwarm({ count = 180 }) {
     for (let i=0;i<count;i++) {
       const i3 = i*3;
       const speed = speeds[i];
-      pos.setX(i, (base as any)[i3] + Math.sin(t*speed + i)*0.6);
-      pos.setY(i, (base as any)[i3+1] + Math.cos(t*speed*0.9 + i*0.6)*0.5);
-      pos.setZ(i, (base as any)[i3+2] + Math.sin(t*speed*0.7 + i*0.4)*0.4);
+  const b = base as Float32Array | number[];
+  pos.setX(i, b[i3] + Math.sin(t*speed + i)*0.6);
+  pos.setY(i, b[i3+1] + Math.cos(t*speed*0.9 + i*0.6)*0.5);
+  pos.setZ(i, b[i3+2] + Math.sin(t*speed*0.7 + i*0.4)*0.4);
     }
     pos.needsUpdate = true;
     points.current.position.x = THREE.MathUtils.damp(points.current.position.x, state.pointer.x * 0.8, 3, delta);

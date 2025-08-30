@@ -13,7 +13,8 @@ export function FloatingCubes() {
   })), []);
   useFrame((state, delta) => {
     state.scene.traverse(obj => {
-      if ((obj as any).userData?.spin) {
+      const spin = (obj as THREE.Object3D & { userData: { spin?: boolean } }).userData.spin;
+      if (spin) {
         obj.rotation.x += delta * 0.25;
         obj.rotation.y += delta * 0.35;
       }
